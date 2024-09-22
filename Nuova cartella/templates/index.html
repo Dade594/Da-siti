@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Votazione</title>
+    <style>
+        body {
+            text-align: center;
+            margin: 50px;
+            background-color: #4B0082; /* Blu indaco */
+            color: white; /* Testo bianco per contrasto */
+        }
+        img {
+            width: 150px; /* Dimensione ingrandita per le immagini */
+            height: 150px; /* Dimensione ingrandita per le immagini */
+        }
+        #pinInput {
+            display: none; /* Nascondi il campo per dispositivi mobili */
+        }
+        @media (min-width: 600px) {
+            #pinInput {
+                display: inline; /* Mostra il campo per desktop */
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Vota!</h1>
+    <form id="voteForm" action="/vote" method="post">
+        <button type="submit" name="vote" value="tick">
+            <img src="{{ url_for('static', filename='tick.png') }}" alt="Tick">
+        </button>
+        <button type="submit" name="vote" value="x">
+            <img src="{{ url_for('static', filename='x.png') }}" alt="X">
+        </button>
+    </form>
+
+    <h2>Inserisci il tuo PIN per vedere i risultati o rifare la votazione:</h2>
+    <input type="text" id="pinInput" name="pin" placeholder="PIN" required>
+    <button id="showResults" onclick="validatePin()">Vedi risultati</button>
+    <button id="resetVote" onclick="resetVote()">Rifai votazione</button>
+
+    <div id="results" style="display: none;">
+        <h2>Risultati:</h2>
+        <p id="resultsText"></p>
+    </div>
+
+    <script>
+        function validatePin() {
+            const pin = document.getElementById('pinInput').value;
+            // Invio del PIN per validazione
+            fetch('/validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pin: pin })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.valid) {
+                    document.getElementById('resultsText').innerText = data.results;
+                    document.getElementById('results').style.display = 'block';
+                } else {
+                    alert("PIN non valido.");
+                }
+            });
+        }
+
+        function resetVote() {
+            fetch('/reset', {
+                method: 'POST'
+            })
+            .then(() => {
+                alert("Votazione azzerata!");
+            });
+        }
+    </script>
+</body>
+</html>
